@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
             const text_content = chunk.choices[0]?.delta?.content || "";
 
             if (text_content) {
-              console.log(
-                `${responseType} chunk:`,
-                JSON.stringify(text_content)
-              );
+              // console.log(
+              //   `${responseType} chunk:`,
+              //   JSON.stringify(text_content)
+              // );
 
               // converting raw content in JSON format
               const data = JSON.stringify({

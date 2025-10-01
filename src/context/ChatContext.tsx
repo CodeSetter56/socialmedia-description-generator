@@ -1,17 +1,19 @@
 "use client";
 
-import { ChatContextType, Responses } from "@/utils/types";
+import { ChatContextType, Responses, PlatformId } from "@/utils/types";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState("");
+  const [platforms, setPlatforms] = useState<PlatformId[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [responses, setResponses] = useState<Responses>({
-    simple: "",
-    detailed: "",
-    creative: "",
+    Twitter: "",
+    Facebook: "",
+    LinkedIn: "",
+    Instagram: "",
   });
 
   return (
@@ -19,6 +21,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       value={{
         message,
         setMessage,
+        platforms,
+        setPlatforms,
         responses,
         setResponses,
         isLoading,

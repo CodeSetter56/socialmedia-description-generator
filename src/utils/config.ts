@@ -1,14 +1,25 @@
-export const responseConfig = {
-  simple: {
-    title: "Simple",
-    color: "text-green-600",
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { PlatformType } from "./types";
+
+export const platformConfig: PlatformType[] = [
+  {
+    id: "Twitter",
+    icon: FaTwitter,
+    color: "text-blue-400",
   },
-  detailed: {
-    title: "Detailed",
+  {
+    id: "Facebook",
+    icon: FaFacebook,
+    color: "text-blue-800",
+  },
+  {
+    id: "LinkedIn",
+    icon: FaLinkedin,
     color: "text-blue-600",
   },
-  creative: {
-    title: "Creative",
-    color: "text-red-600",
+  {
+    id: "Instagram",
+    icon: FaInstagram,
+    color: "text-pink-500",
   },
-};
+];

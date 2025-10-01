@@ -1,20 +1,30 @@
-import { ChatContextType, ResponseType } from "@/utils/types";
+import { ChatContextType, PlatformId } from "@/utils/types";
 
 export const startStreaming = async (
   message: string,
+  platforms: PlatformId[],
   setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   signal: AbortSignal
 ) => {
-  if (!message) return;
+  if (!message || platforms.length === 0) return;
+
   setIsLoading(true);
-  setResponses({ simple: "", detailed: "", creative: "" });
+
+  // Reset only selected platforms to empty strings
+  setResponses((prev) => {
+    const reset = { ...prev };
+    platforms.forEach((platform) => {
+      reset[platform] = "";
+    });
+    return reset;
+  });
 
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, platforms }), // send both message and platforms
       signal, // attach the AbortSignal to the fetch request
     });
 
@@ -22,16 +32,21 @@ export const startStreaming = async (
       throw new Error("Response body is empty.");
     }
 
+    // ReadableStreamDefaultReader - allows reading data chunks from a stream one by one
     const reader = response.body.getReader();
+
+    // TextDecoder - converts raw bytes into readable text strings
     const decoder = new TextDecoder();
 
     while (true) {
+
       const { done, value } = await reader.read();
       if (done) {
         setIsLoading(false);
         break;
       }
 
+      // convert byte array chunk into a readable string
       const chunk = decoder.decode(value);
       const lines = chunk.split("\n");
 
@@ -41,7 +56,6 @@ export const startStreaming = async (
           try {
             const data = JSON.parse(line.slice(6));
             const { type, content, error } = data;
-
             // server sent signal that all responses are done
             if (type === "all_done") {
               break;
@@ -50,7 +64,7 @@ export const startStreaming = async (
             if (content && type) {
               setResponses((prev) => ({
                 ...prev,
-                [type as ResponseType]: prev[type as ResponseType] + content,
+                [type]: prev[type as PlatformId] + content,
               }));
             }
 
@@ -69,5 +83,5 @@ export const startStreaming = async (
     } else {
       console.error("Fetch error:", error);
     }
-  } 
+  }
 };

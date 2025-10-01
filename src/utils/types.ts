@@ -1,18 +1,27 @@
 import { Dispatch, SetStateAction } from "react";
 
-export type ResponseType = "simple" | "detailed" | "creative";
+export type PlatformId = "Twitter" | "Facebook" | "LinkedIn" | "Instagram";
+
+export type PlatformType = {
+  id: PlatformId,
+  icon: React.ElementType,
+  color: string,
+};
 
 export type Responses = {
-  simple: string;
-  detailed: string;
-  creative: string;
+  Twitter: string,
+  Facebook: string,
+  LinkedIn: string,
+  Instagram: string,
 };
 
 export type ChatContextType = {
-  message: string;
-  setMessage: (msg: string) => void;
-  responses: Responses;
-  setResponses: Dispatch<SetStateAction<Responses>>; 
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
+  message: string,
+  setMessage: (msg: string) => void,
+  platforms: PlatformId[],
+  setPlatforms: (platforms: PlatformId[]) => void,
+  responses: Responses,
+  setResponses: Dispatch<SetStateAction<Responses>>,
+  isLoading: boolean,
+  setIsLoading: (loading: boolean) => void,
 };

@@ -1,12 +1,13 @@
 "use client";
 
-import { ChatContextType, Responses, PlatformId } from "@/utils/types";
+import { ChatContextType, Responses, PlatformId, MyFile } from "@/utils/types";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState("");
+  const [file, setFile] = useState<MyFile|null>(null);
   const [platforms, setPlatforms] = useState<PlatformId[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [responses, setResponses] = useState<Responses>({
@@ -19,6 +20,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   return (
     <ChatContext.Provider
       value={{
+        file,
+        setFile,
         message,
         setMessage,
         platforms,

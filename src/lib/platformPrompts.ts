@@ -5,7 +5,7 @@ export function getPrompt(platformId: PlatformId, userMessage: string): string {
 
   switch (platformId) {
     case "Instagram":
-      instruction = `Write in a personal, storytelling tone. Use emojis. End with a call to action. After the main caption, add 5 vertical dots on new lines, followed by relevant hashtags.`;
+      instruction = `Write in a personal, storytelling tone. Use emojis. End with a call to action. After the main caption, add 5 VERTICAL dots ON NEW LINES, followed by relevant hashtags.`;
       break;
     case "Twitter":
       instruction = `Keep the content short and punchy (under 280 characters). Use wit or bold statements. Append relevant hashtags directly to the end of the text.`;

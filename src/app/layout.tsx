@@ -1,3 +1,5 @@
+// File: app/layout.tsx
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -24,11 +26,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
       >
-        <ChatProvider>{children}</ChatProvider>
+        <ChatProvider>
+          {/* THIS IS THE FIX:
+            - We create a <main> tag to hold all page content.
+            - flex-1: Makes this main area grow to fill the space in the flex-col body.
+            - overflow-y-auto: Makes THIS element, not the body, the one that scrolls
+              when content is too tall.
+          */}
+          <main className="flex-1 overflow-y-auto">{children}</main>
+        </ChatProvider>
       </body>
     </html>
   );

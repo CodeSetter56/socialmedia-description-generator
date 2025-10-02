@@ -9,9 +9,10 @@ export const startStreaming = async (
 ) => {
   if (!message || platforms.length === 0) return;
 
+  //already set loading true in InputForm
   setIsLoading(true);
 
-  // Reset only selected platforms to empty strings
+  // reset only selected platforms to empty strings
   setResponses((prev) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
@@ -24,7 +25,7 @@ export const startStreaming = async (
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, platforms }), // send both message and platforms
+      body: JSON.stringify({ message, platforms }), 
       signal, // attach the AbortSignal to the fetch request
     });
 
@@ -34,7 +35,6 @@ export const startStreaming = async (
 
     // ReadableStreamDefaultReader - allows reading data chunks from a stream one by one
     const reader = response.body.getReader();
-
     // TextDecoder - converts raw bytes into readable text strings
     const decoder = new TextDecoder();
 
@@ -58,7 +58,8 @@ export const startStreaming = async (
             const { type, content, error } = data;
             // server sent signal that all responses are done
             if (type === "all_done") {
-              break;
+              setIsLoading(false); // mark as done here
+              return;  
             }
 
             if (content && type) {

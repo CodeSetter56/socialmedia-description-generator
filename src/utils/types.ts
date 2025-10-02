@@ -15,7 +15,16 @@ export type Responses = {
   Instagram: string,
 };
 
+export interface MyFile extends File {
+  preview: string;
+  width: number;
+  height: number;
+  orientation: "portrait" | "landscape" | "square";
+}
+
 export type ChatContextType = {
+  file: MyFile | null,
+  setFile: (file: MyFile | null) => void,
   message: string,
   setMessage: (msg: string) => void,
   platforms: PlatformId[],

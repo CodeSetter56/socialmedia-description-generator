@@ -7,7 +7,6 @@ import { PlatformId } from "@/utils/types";
 const CreateBox = ({ type }: { type: PlatformId }) => {
   const { responses, isLoading } = useChat();
 
-  // Find the platform configuration
   const config = platformConfig.find((p) => p.id === type);
   if (!config) return null;
 

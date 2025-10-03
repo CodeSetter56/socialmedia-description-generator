@@ -1,9 +1,13 @@
+// app/upload/ImageForm.tsx
+
 "use client";
 
 import { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { useChat } from "@/context/ChatContext";
+
 import { MyFile } from "@/utils/types";
+
+import { useChat } from "@/context/ChatContext";
 
 const getOrientation = (w: number, h: number): MyFile["orientation"] => {
   if (w > h) return "landscape";
@@ -59,16 +63,17 @@ export default function ImageForm() {
   return (
     <div
       {...getRootProps({
-        className: "p-6 w-full h-full flex items-center justify-center border-2 rounded-lg transition-colors border-gray-400",
+        className:
+          "p-6 w-full h-full flex items-center justify-center border-1 rounded-lg transition-colors border-amber-900",
       })}
     >
       <input {...getInputProps()} />
 
       <div
-        className={`aspect-square w-full max-w-[500px] flex items-center justify-center border-2 border-dashed rounded-lg cursor-pointer border-gray-300 
+        className={`aspect-square w-full max-w-[500px] flex items-center justify-center border-2 border-dashed rounded-lg cursor-pointer border-amber-900
       ${
         isDragActive
-          ? "border-blue-500 bg-blue-50"
+          ? "border-amber-900 bg-amber-50"
           : "border-gray-300 bg-white hover:border-gray-400"
       }`}
       >

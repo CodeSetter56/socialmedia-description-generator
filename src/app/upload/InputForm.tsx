@@ -1,14 +1,19 @@
+// app/upload/InputForm.tsx
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { platformConfig } from "@/utils/config";
 import { PlatformId, PlatformType } from "@/utils/types";
+import Button from "@/components/Button";
+
 import { useChat } from "@/context/ChatContext";
 
 export default function InputForm() {
   const router = useRouter();
-  const { setMessage, setPlatforms, isLoading, setIsLoading } = useChat();
+  const { file, setMessage, setPlatforms, setIsLoading } = useChat();
   const [inputMessage, setInputMessage] = useState<string>("");
   // array of selected platform ids
   const [platformToggle, setPlatformToggle] = useState<PlatformId[]>([]);
@@ -24,14 +29,21 @@ export default function InputForm() {
   };
 
   const handleSubmit = () => {
-    if (!inputMessage.trim()) return;
-    if (platformToggle.length === 0) {
-      alert("select at least one platform");
+    // Check if we have either an image OR text
+    if (!file && !inputMessage.trim()) {
+      alert("Please upload an image or provide a description");
       return;
     }
+
+    if (platformToggle.length === 0) {
+      alert("Select at least one platform");
+      return;
+    }
+
     setIsLoading(true);
-    setMessage(inputMessage);
+    setMessage(inputMessage); // Can be empty
     setPlatforms(platformToggle);
+    
     router.push("/results");
   };
 
@@ -40,13 +52,24 @@ export default function InputForm() {
       <div className="flex flex-col gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Describe your post
+            Describe your post{" "}
+            {file && <span className="text-gray-500">(optional)</span>}
           </label>
           <textarea
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Describe your post and select platforms"
-            className="w-full px-4 py-3 text-lg text-black border-2 border-gray-300 rounded-lg focus:outline-none focus:border-grey-300 focus:ring-2 focus:ring-grey-200 transition-all resize-none"
+            placeholder={`Hint: the ai can study the uploaded image, but you can add your own thoughts briefly. 
+Talk about:
+- what you feel about the image
+- what you want to promote
+- some engaging question
+you can use line breaks for multiple points. The ai response will improve with more context.
+
+eg: (You uploaded a selfie)
+-my face
+-feeling happy
+-what are your ways to stay positive?`}
+            className="w-full bg-amber-50 px-4 py-3 text-lg text-black border-1 border-amber-900 rounded-lg focus:outline-none focus:border-amber-950 focus:ring-1 focus:ring-grey-200 transition-all resize-none"
             rows={6}
           />
         </div>
@@ -75,13 +98,13 @@ export default function InputForm() {
           </div>
         </div>
 
-        <button
+        <Button
           onClick={handleSubmit}
-          disabled={!inputMessage.trim() || platformToggle.length === 0 || isLoading}
-          className="self-center px-8 py-3 text-lg font-semibold rounded-lg bg-blue-600 text-white hover:shadow-lg transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed "
+          disabled={!file || platformToggle.length === 0}
+          className="self-center"
         >
           Generate
-        </button>
+        </Button>
       </div>
     </div>
   );

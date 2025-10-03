@@ -8,15 +8,16 @@ const openrouter = new OpenAI({
 });
 
 export async function POST(request: NextRequest) {
-  // from startStreaming in results/page.tsx
-  const { message, platforms } = await request.json();
+  // from startStreaming
+  const { message, platforms, image, imageType } = await request.json();
 
   // console.log("user message:", message);
   // console.log("selected platforms:", platforms);
+  // console.log("has image:", !!image);
 
-  if (!message || !platforms || platforms.length === 0) {
+  if ((!message && !image) || !platforms || platforms.length === 0) {
     return new Response(
-      JSON.stringify({ error: "Message and platforms are required" }),
+      JSON.stringify({ error: "Message or image, and platforms are required" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
@@ -24,17 +25,43 @@ export async function POST(request: NextRequest) {
   // ReadableStream: keep sending data to frontend
   const stream = new ReadableStream({
     start(controller) {
-
       // handle one LLM response for a specific platform
       async function streamResponse(platformId: string) {
         try {
+          const prompt = getPrompt(platformId as any, message || "", !!image);
 
-          const prompt = getPrompt(platformId as any, message);
+          // Build messages array based on whether we have an image
+          const messages: any[] = [];
+
+          if (image) {
+            // Vision-enabled message format
+            messages.push({
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: `data:${imageType || "image/jpeg"};base64,${image}`,
+                  },
+                },
+                {
+                  type: "text",
+                  text: prompt,
+                },
+              ],
+            });
+          } else {
+            // Text-only fallback
+            messages.push({
+              role: "user",
+              content: prompt,
+            });
+          }
 
           const llmStream = await openrouter.chat.completions.create({
-            model: "openai/gpt-4o-mini",
-            messages: [{ role: "user", content: prompt }],
-            stream: true, 
+            model: "x-ai/grok-4-fast:free", 
+            messages: messages,
+            stream: true,
           });
 
           for await (const chunk of llmStream) {
@@ -46,7 +73,7 @@ export async function POST(request: NextRequest) {
                 content: text_content,
               });
 
-              // send structured data to frontend 
+              // send structured data to frontend
               controller.enqueue(`data: ${data}\n\n`);
             }
           }
@@ -81,13 +108,14 @@ export async function POST(request: NextRequest) {
         controller.enqueue(`data: ${JSON.stringify({ type: "all_done" })}\n\n`);
         controller.close();
       });
+      
     },
   });
 
   return new Response(stream, {
     headers: {
-      "Content-Type": "text/event-stream", 
-      "Cache-Control": "no-cache", 
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
       Connection: "keep-alive",
     },
   });

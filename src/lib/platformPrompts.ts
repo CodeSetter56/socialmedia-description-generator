@@ -1,6 +1,10 @@
 import { PlatformId } from "@/utils/types";
 
-export function getPrompt(platformId: PlatformId, userMessage: string): string {
+export function getPrompt(
+  platformId: PlatformId,
+  userMessage: string,
+  hasImage: boolean
+): string {
   let instruction = "";
 
   switch (platformId) {
@@ -18,12 +22,21 @@ export function getPrompt(platformId: PlatformId, userMessage: string): string {
       break;
   }
 
-  return `You are an expert social media copywriter.
-Analyze the user's request for a social media post for the platform: ${platformId}.
+  const imageInstruction = hasImage
+    ? "Carefully analyze the provided image. Identify key elements, mood, context, subjects, and any text visible in the image."
+    : "";
 
-User's Context: "${userMessage}"
+  const contextSection = userMessage.trim()
+    ? `User's Context/Requirements: "${userMessage}"\n\nSynthesize the image analysis with the user's context to create a cohesive message.`
+    : "Based purely on your image analysis, create engaging content that captures what you see.";
 
-Follow these rules strictly: ${instruction}
+  return `You are an expert social media copywriter for ${platformId}.
 
-IMPORTANT: Generate ONLY the final text for the social media post. Do not include any explanations, titles, or any text other than the post content itself.`;
+${imageInstruction}
+
+${contextSection}
+
+Platform-Specific Rules: ${instruction}
+
+IMPORTANT: Generate ONLY the final text for the social media post. Do not include any explanations, preambles, titles, or any text other than the post content itself. Start directly with the post content.`;
 }

@@ -1,13 +1,30 @@
-import { ChatContextType, PlatformId } from "@/utils/types";
+// app/results/startStreaming.ts
+
+import { ChatContextType, PlatformId, MyFile } from "@/utils/types";
+
+// Helper function to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      // Remove the data:image/xxx;base64, prefix
+      const base64 = (reader.result as string).split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 export const startStreaming = async (
   message: string,
   platforms: PlatformId[],
+  file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   signal: AbortSignal
 ) => {
-  if (!message || platforms.length === 0) return;
+  if ((!message && !file) || platforms.length === 0) return;
 
   //already set loading true in InputForm
   setIsLoading(true);
@@ -22,10 +39,24 @@ export const startStreaming = async (
   });
 
   try {
+    // Convert image to base64 if exists
+    let imageBase64 = null;
+    let imageType = null;
+
+    if (file) {
+      imageBase64 = await fileToBase64(file);
+      imageType = file.type;
+    }
+
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, platforms }), 
+      body: JSON.stringify({
+        message,
+        platforms,
+        image: imageBase64,
+        imageType: imageType,
+      }),
       signal, // attach the AbortSignal to the fetch request
     });
 
@@ -39,7 +70,6 @@ export const startStreaming = async (
     const decoder = new TextDecoder();
 
     while (true) {
-
       const { done, value } = await reader.read();
       if (done) {
         setIsLoading(false);
@@ -59,7 +89,7 @@ export const startStreaming = async (
             // server sent signal that all responses are done
             if (type === "all_done") {
               setIsLoading(false); // mark as done here
-              return;  
+              return;
             }
 
             if (content && type) {
@@ -84,5 +114,6 @@ export const startStreaming = async (
     } else {
       console.error("Fetch error:", error);
     }
+    setIsLoading(false);
   }
 };

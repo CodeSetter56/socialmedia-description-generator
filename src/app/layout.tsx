@@ -1,9 +1,8 @@
-// File: app/layout.tsx
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ChatProvider } from "../context/ChatContext";
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,16 +27,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col overflow-hidden`}
       >
         <ChatProvider>
-          {/* THIS IS THE FIX:
-            - We create a <main> tag to hold all page content.
-            - flex-1: Makes this main area grow to fill the space in the flex-col body.
-            - overflow-y-auto: Makes THIS element, not the body, the one that scrolls
-              when content is too tall.
-          */}
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <Navbar />
+          <main className="flex-1 min-h-0 overflow-y-auto">{children}</main>
         </ChatProvider>
       </body>
     </html>

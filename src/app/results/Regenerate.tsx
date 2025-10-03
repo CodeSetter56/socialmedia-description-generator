@@ -48,7 +48,7 @@ export const handleRegenerateSingle = (
   file: any,
   setResponses: (r: any) => void,
   setIsLoading: (loading: boolean) => void,
-  abortControllerRef: React.MutableRefObject<AbortController | null>,
+  globalAbortControllerRef: React.MutableRefObject<AbortController | null>,
   startStreaming: any
 ) => {
   // Clear response for this platform before regenerating
@@ -57,13 +57,14 @@ export const handleRegenerateSingle = (
     [platformId]: "",
   }));
 
-  abortControllerRef.current = new AbortController();
+  // Use the global abort controller ref so the stop button can abort individual regenerations
+  globalAbortControllerRef.current = new AbortController();
   startStreaming(
     message,
     [platformId],
     file,
     setResponses,
     setIsLoading,
-    abortControllerRef.current.signal
+    globalAbortControllerRef.current.signal
   );
 };

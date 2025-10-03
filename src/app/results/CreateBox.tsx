@@ -3,19 +3,23 @@
 "use client";
 
 import { IoMdRefresh, IoMdClipboard, IoMdCheckmark } from "react-icons/io";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useChat } from "@/context/ChatContext";
 import { platformConfig } from "@/utils/config";
 import { PlatformId } from "@/utils/types";
 import { handleCopy, handleRegenerateSingle } from "./Regenerate";
 import { startStreaming } from "@/app/results/startStreaming";
 
-const CreateBox = ({ type }: { type: PlatformId }) => {
+interface CreateBoxProps {
+  type: PlatformId;
+  globalAbortControllerRef: React.MutableRefObject<AbortController | null>;
+}
+
+const CreateBox = ({ type, globalAbortControllerRef }: CreateBoxProps) => {
   const { responses, isLoading, message, file, setResponses, setIsLoading } =
     useChat();
 
   const [copiedPlatform, setCopiedPlatform] = useState<PlatformId | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   const config = platformConfig.find((p) => p.id === type);
   if (!config) return null;
@@ -59,7 +63,7 @@ const CreateBox = ({ type }: { type: PlatformId }) => {
                 file,
                 setResponses,
                 setIsLoading,
-                abortControllerRef,
+                globalAbortControllerRef,
                 startStreaming
               )
             }

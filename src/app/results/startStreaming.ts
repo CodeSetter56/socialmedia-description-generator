@@ -24,9 +24,19 @@ export const startStreaming = async (
   setIsLoading: (loading: boolean) => void,
   signal: AbortSignal
 ) => {
-  if ((!message && !file) || platforms.length === 0) return;
+  if ((!message && !file) || platforms.length === 0) {
+    setIsLoading(false);
+    return;
+  }
 
-  //already set loading true in InputForm
+  // Check if already aborted before starting
+  if (signal.aborted) {
+    setIsLoading(false);
+    return;
+  }
+
+  // Loading state should already be set to true by the calling function
+  // but ensure it's set in case it wasn't
   setIsLoading(true);
 
   // reset only selected platforms to empty strings
@@ -110,10 +120,12 @@ export const startStreaming = async (
     }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      console.log("Fetch aborted");
+      console.log("Fetch aborted by user");
+      // Don't set loading to false here if it was aborted by user action
+      // The abort handler should manage the loading state
     } else {
       console.error("Fetch error:", error);
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 };

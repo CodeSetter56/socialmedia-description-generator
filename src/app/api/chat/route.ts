@@ -25,13 +25,27 @@ export async function POST(request: NextRequest) {
   // ReadableStream: keep sending data to frontend
   const stream = new ReadableStream({
     start(controller) {
+      let isClosed = false; // Track controller state
+
+      // Safe enqueue wrapper to prevent writing to closed controller
+      const safeEnqueue = (data: string) => {
+        if (!isClosed) {
+          try {
+            controller.enqueue(data);
+          } catch (error) {
+            isClosed = true;
+            console.error("Failed to enqueue data:", error);
+          }
+        }
+      };
+
       // handle one LLM response for a specific platform
       async function streamResponse(platformId: string) {
         try {
           const prompt = getPrompt(platformId as any, message || "", !!image);
 
           // Build messages array based on whether we have an image
-          const messages: any[] = [];
+          const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
           if (image) {
             // Vision-enabled message format
@@ -59,7 +73,7 @@ export async function POST(request: NextRequest) {
           }
 
           const llmStream = await openrouter.chat.completions.create({
-            model: "x-ai/grok-4-fast:free", 
+            model: "x-ai/grok-4-fast:free",
             messages: messages,
             stream: true,
           });
@@ -74,7 +88,7 @@ export async function POST(request: NextRequest) {
               });
 
               // send structured data to frontend
-              controller.enqueue(`data: ${data}\n\n`);
+              safeEnqueue(`data: ${data}\n\n`);
             }
           }
 
@@ -83,15 +97,17 @@ export async function POST(request: NextRequest) {
             type: platformId,
             done: true,
           });
-          controller.enqueue(`data: ${doneData}\n\n`);
-        } catch (error: any) {
-          console.error(`${platformId} stream failed:`, error.message);
+          safeEnqueue(`data: ${doneData}\n\n`);
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(`${platformId} stream failed:`, errorMessage);
 
           const errorData = JSON.stringify({
             type: platformId,
-            error: error.message,
+            error: errorMessage,
           });
-          controller.enqueue(`data: ${errorData}\n\n`);
+          safeEnqueue(`data: ${errorData}\n\n`);
         }
       }
 
@@ -105,10 +121,13 @@ export async function POST(request: NextRequest) {
         console.log("all streams completed:", results);
 
         // final completion signal to frontend
-        controller.enqueue(`data: ${JSON.stringify({ type: "all_done" })}\n\n`);
-        controller.close();
+        safeEnqueue(`data: ${JSON.stringify({ type: "all_done" })}\n\n`);
+
+        if (!isClosed) {
+          isClosed = true;
+          controller.close();
+        }
       });
-      
     },
   });
 

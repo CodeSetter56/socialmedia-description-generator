@@ -3,6 +3,7 @@
 import { IoMdRefresh, IoMdArrowBack, IoMdClose } from "react-icons/io";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image"; 
 import { useChat } from "@/context/ChatContext";
 import { PlatformId } from "@/utils/types";
 import { handleRegenerateAll } from "./Regenerate";
@@ -22,7 +23,6 @@ export default function ResultsPage() {
     setIsLoading,
   } = useChat();
 
-  // Ref to manage aborting fetch requests
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -36,15 +36,12 @@ export default function ResultsPage() {
       file,
       setResponses,
       setIsLoading,
-      // pass the abort signal to startStreaming
       abortControllerRef.current.signal
     );
 
-    // abort fetch on unmount
     return () => {
       abortControllerRef.current?.abort();
     };
-
   }, [message, file, platforms, setResponses, setIsLoading, router]);
 
   const handleBack = () => {
@@ -71,11 +68,13 @@ export default function ResultsPage() {
 
           <div className="flex items-start justify-between gap-6">
             {file && (
-              <div className="flex-shrink-0 w-[25%]">
-                <img
+              <div className="flex-shrink-0 w-[25%] relative h-64">
+                <Image
                   src={file.preview}
-                  alt="Uploaded"
-                  className="w-full h-64 rounded-lg shadow-sm object-cover"
+                  alt="Uploaded content"
+                  fill
+                  className="rounded-lg shadow-sm object-cover"
+                  unoptimized 
                 />
               </div>
             )}

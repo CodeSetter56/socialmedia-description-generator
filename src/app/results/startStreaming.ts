@@ -33,7 +33,6 @@ export const startStreaming = async (
   });
 
   try {
-
     let imageBase64 = null;
     let imageType = null;
 

@@ -1,12 +1,10 @@
-// app/upload/ImageForm.tsx
-
 "use client";
 
 import { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
+import Image from "next/image"; 
 
 import { MyFile } from "@/utils/types";
-
 import { useChat } from "@/context/ChatContext";
 
 const getOrientation = (w: number, h: number): MyFile["orientation"] => {
@@ -18,7 +16,6 @@ const getOrientation = (w: number, h: number): MyFile["orientation"] => {
 export default function ImageForm() {
   const { file, setFile } = useChat();
 
-  // useCallback to avoid re-creating the function on every render
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (!acceptedFiles?.length) return;
@@ -26,14 +23,13 @@ export default function ImageForm() {
       const newFile = acceptedFiles[0];
       const preview = URL.createObjectURL(newFile);
 
-      const img = new Image();
+      const img = new window.Image();
       img.src = preview;
 
       img.onload = () => {
         const { naturalWidth: width, naturalHeight: height } = img;
 
         setFile(
-          // merge file with preview, width, height, orientation
           Object.assign(newFile, {
             preview,
             width,
@@ -52,12 +48,10 @@ export default function ImageForm() {
     multiple: false,
   });
 
-  // cleanup previews on unmount or file change
   useEffect(() => {
     return () => {
       if (file?.preview) URL.revokeObjectURL(file.preview);
     };
-    // dependency on file change
   }, [file]);
 
   return (
@@ -78,10 +72,13 @@ export default function ImageForm() {
       }`}
       >
         {file ? (
-          <div className="w-full h-full flex items-center justify-center bg-black rounded-md overflow-hidden ">
-            <img
+          <div className="w-full h-full flex items-center justify-center bg-black rounded-md overflow-hidden relative">
+            <Image
               src={file.preview}
-              className="object-contain max-w-full max-h-full "
+              alt="Preview of uploaded image"
+              fill
+              className="object-contain"
+              unoptimized 
             />
           </div>
         ) : (

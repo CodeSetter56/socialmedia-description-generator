@@ -1,4 +1,7 @@
-import { PlatformId } from "@/utils/types";
+import { ChatContextType, PlatformId, MyFile } from "@/utils/types";
+
+// Import the actual startStreaming function
+import { startStreaming } from "./startStreaming";
 
 export const handleCopy = (
   text: string | undefined,
@@ -14,15 +17,14 @@ export const handleCopy = (
 export const handleRegenerateAll = (
   message: string | null,
   platforms: PlatformId[],
-  file: any,
-  setResponses: (r: any) => void,
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   abortControllerRef: React.MutableRefObject<AbortController | null>,
-  startStreaming: any
+  startStreamingFn: typeof startStreaming
 ) => {
 
-  // Clear responses for selected platforms before regenerating
-  setResponses((prev: any) => {
+  setResponses((prev) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
       reset[platform] = "";
@@ -31,7 +33,7 @@ export const handleRegenerateAll = (
   });
 
   abortControllerRef.current = new AbortController();
-  startStreaming(
+  startStreamingFn(
     message,
     platforms,
     file,
@@ -44,22 +46,20 @@ export const handleRegenerateAll = (
 export const handleRegenerateSingle = (
   message: string | null,
   platformId: PlatformId,
-  file: any,
-  setResponses: (r: any) => void,
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   globalAbortControllerRef: React.MutableRefObject<AbortController | null>,
-  startStreaming: any
+  startStreamingFn: typeof startStreaming
 ) => {
   
-  // Clear response for this platform before regenerating
-  setResponses((prev: any) => ({
+  setResponses((prev) => ({
     ...prev,
     [platformId]: "",
   }));
 
-  // Use the global abort controller ref so the stop button can abort individual regenerations
   globalAbortControllerRef.current = new AbortController();
-  startStreaming(
+  startStreamingFn(
     message,
     [platformId],
     file,

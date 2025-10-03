@@ -22,7 +22,7 @@ export default function Button(props: ButtonPropsType) {
   const { isLoading } = useChat();
 
   // Determine if button should be disabled
-  const shouldDisable = disabled || (!ignoreLoading && isLoading);
+  const shouldDisable = !!disabled || (!ignoreLoading && isLoading);
 
   // Centralized base styles for all buttons and links
   const baseStyles = `font-semibold text-white rounded-lg hover:bg-amber-950 transition-all inline-flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed`;

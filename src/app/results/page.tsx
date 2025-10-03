@@ -1,7 +1,7 @@
 "use client";
 
 import { IoMdRefresh, IoMdArrowBack, IoMdClose } from "react-icons/io";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@/context/ChatContext";
 import { PlatformId } from "@/utils/types";
@@ -24,8 +24,7 @@ export default function ResultsPage() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-
+  useLayoutEffect(() => {
     setIsLoading(true);
 
     abortControllerRef.current = new AbortController();

@@ -66,10 +66,35 @@ export const startStreaming = async (
 
     // ReadableStreamDefaultReader - allows reading data chunks from a stream one by one
     const reader = response.body.getReader();
+    // Ensure we cancel the reader if the request is aborted after response
+    const onAbort = () => {
+      try {
+        reader.cancel();
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    if (signal.aborted) {
+      onAbort();
+      setIsLoading(false);
+      return;
+    }
+
+    signal.addEventListener("abort", onAbort, { once: true });
     // TextDecoder - converts raw bytes into readable text strings
     const decoder = new TextDecoder();
 
     while (true) {
+      if (signal.aborted) {
+        try {
+          reader.cancel();
+        } catch (e) {
+          // ignore
+        }
+        setIsLoading(false);
+        break;
+      }
       const { done, value } = await reader.read();
       if (done) {
         setIsLoading(false);

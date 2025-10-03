@@ -1,13 +1,32 @@
 import { getPrompt } from "@/lib/platformPrompts";
+import type { PlatformId } from "@/utils/types";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
 
-const openrouter = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+// Minimal message types to satisfy TypeScript without relying on SDK internals
+type ImageContent = {
+  type: "image_url";
+  image_url: { url: string };
+};
+type TextContent = {
+  type: "text";
+  text: string;
+};
+type VisionMessage = {
+  role: "user";
+  content: Array<ImageContent | TextContent>;
+};
+type TextMessage = {
+  role: "user";
+  content: string;
+};
+type Message = VisionMessage | TextMessage;
 
 export async function POST(request: NextRequest) {
+  const openrouter = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+  });
   // from startStreaming
   const { message, platforms, image, imageType } = await request.json();
 
@@ -28,10 +47,10 @@ export async function POST(request: NextRequest) {
       // handle one LLM response for a specific platform
       async function streamResponse(platformId: string) {
         try {
-          const prompt = getPrompt(platformId as any, message || "", !!image);
+          const prompt = getPrompt(platformId as PlatformId, message || "", !!image);
 
           // Build messages array based on whether we have an image
-          const messages: any[] = [];
+          const messages: Message[] = [];
 
           if (image) {
             // Vision-enabled message format
@@ -84,12 +103,14 @@ export async function POST(request: NextRequest) {
             done: true,
           });
           controller.enqueue(`data: ${doneData}\n\n`);
-        } catch (error: any) {
-          console.error(`${platformId} stream failed:`, error.message);
+          } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(`${platformId} stream failed:`, errorMessage);
 
           const errorData = JSON.stringify({
             type: platformId,
-            error: error.message,
+            error: errorMessage,
           });
           controller.enqueue(`data: ${errorData}\n\n`);
         }

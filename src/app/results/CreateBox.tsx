@@ -3,19 +3,24 @@
 "use client";
 
 import { IoMdRefresh, IoMdClipboard, IoMdCheckmark } from "react-icons/io";
-import { useRef, useState } from "react";
+import { useState, MutableRefObject } from "react";
 import { useChat } from "@/context/ChatContext";
 import { platformConfig } from "@/utils/config";
 import { PlatformId } from "@/utils/types";
 import { handleCopy, handleRegenerateSingle } from "./Regenerate";
 import { startStreaming } from "@/app/results/startStreaming";
 
-const CreateBox = ({ type }: { type: PlatformId }) => {
+const CreateBox = ({
+  type,
+  abortControllerRef,
+}: {
+  type: PlatformId;
+  abortControllerRef: MutableRefObject<AbortController | null>;
+}) => {
   const { responses, isLoading, message, file, setResponses, setIsLoading } =
     useChat();
 
   const [copiedPlatform, setCopiedPlatform] = useState<PlatformId | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   const config = platformConfig.find((p) => p.id === type);
   if (!config) return null;

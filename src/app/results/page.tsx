@@ -143,7 +143,11 @@ export default function ResultsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {platforms.map((platformId: PlatformId) => (
-            <CreateBox key={platformId} type={platformId} />
+            <CreateBox
+              key={platformId}
+              type={platformId}
+              abortControllerRef={abortControllerRef}
+            />
           ))}
         </div>
       </div>

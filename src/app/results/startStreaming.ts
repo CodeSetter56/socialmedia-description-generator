@@ -17,7 +17,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 export const startStreaming = async (
-  message: string,
+  message: string | null,
   platforms: PlatformId[],
   file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
@@ -62,7 +62,7 @@ export const startStreaming = async (
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message,
+        message: message || "",
         platforms,
         image: imageBase64,
         imageType: imageType,

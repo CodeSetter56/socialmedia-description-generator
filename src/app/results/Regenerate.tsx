@@ -21,7 +21,7 @@ export const handleRegenerateAll = (
   setIsLoading: (loading: boolean) => void,
   abortControllerRef: React.MutableRefObject<AbortController | null>,
   startStreaming: (
-    message: string,
+    message: string | null,
     platforms: PlatformId[],
     file: MyFile | null,
     setResponses: ChatContextType["setResponses"],
@@ -65,7 +65,7 @@ export const handleRegenerateSingle = (
   setIsLoading: (loading: boolean) => void,
   abortControllerRef: React.MutableRefObject<AbortController | null>,
   startStreaming: (
-    message: string,
+    message: string | null,
     platforms: PlatformId[],
     file: MyFile | null,
     setResponses: ChatContextType["setResponses"],

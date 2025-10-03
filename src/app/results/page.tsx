@@ -116,6 +116,7 @@ export default function ResultsPage() {
                 padding="px-6 py-2.5"
                 color="bg-red-600"
                 className="hover:bg-red-700"
+                disabled={false}
                 ignoreLoading={true}
               >
                 Stop

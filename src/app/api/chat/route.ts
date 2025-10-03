@@ -1,6 +1,7 @@
 import { getPrompt } from "@/lib/platformPrompts";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
+import { PlatformId } from "@/utils/types"; 
 
 const openrouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -42,7 +43,11 @@ export async function POST(request: NextRequest) {
       // handle one LLM response for a specific platform
       async function streamResponse(platformId: string) {
         try {
-          const prompt = getPrompt(platformId as any, message || "", !!image);
+          const prompt = getPrompt(
+            platformId as PlatformId,
+            message || "",
+            !!image
+          );
 
           // Build messages array based on whether we have an image
           const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];

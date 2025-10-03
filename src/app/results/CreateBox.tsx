@@ -1,21 +1,19 @@
-// app/results/CreateBox.tsx
-
 "use client";
 
 import { IoMdRefresh, IoMdClipboard, IoMdCheckmark } from "react-icons/io";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useChat } from "@/context/ChatContext";
 import { platformConfig } from "@/utils/config";
-import { PlatformId } from "@/utils/types";
+import { CreateBoxProps, PlatformId } from "@/utils/types";
 import { handleCopy, handleRegenerateSingle } from "./Regenerate";
 import { startStreaming } from "@/app/results/startStreaming";
 
-const CreateBox = ({ type }: { type: PlatformId }) => {
+// globalAbortControllerRef for aborting individual regenerations
+const CreateBox = ({ type, globalAbortControllerRef }: CreateBoxProps) => {
   const { responses, isLoading, message, file, setResponses, setIsLoading } =
     useChat();
 
   const [copiedPlatform, setCopiedPlatform] = useState<PlatformId | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   const config = platformConfig.find((p) => p.id === type);
   if (!config) return null;
@@ -24,8 +22,8 @@ const CreateBox = ({ type }: { type: PlatformId }) => {
   const isCopied = copiedPlatform === type;
 
   return (
-    <div className="flex flex-col border-2 rounded-lg bg-white border-gray-200 shadow-sm h-[400px]">
-      {/* Header */}
+
+<div className="flex flex-col border-2 rounded-lg bg-white border-gray-200 shadow-sm h-[400px]">
       <div className="flex justify-between items-center gap-2 p-3 border-b">
         <div className="flex gap-2">
           <config.icon className={`h-6 w-6 ${config.color}`} />
@@ -33,7 +31,7 @@ const CreateBox = ({ type }: { type: PlatformId }) => {
         </div>
 
         <div className="flex gap-2">
-          {/* Copy button */}
+
           <button
             onClick={() => handleCopy(responseText, type, setCopiedPlatform)}
             disabled={!responseText || isLoading}
@@ -50,7 +48,6 @@ const CreateBox = ({ type }: { type: PlatformId }) => {
             )}
           </button>
 
-          {/* Regenerate button */}
           <button
             onClick={() =>
               handleRegenerateSingle(
@@ -59,7 +56,7 @@ const CreateBox = ({ type }: { type: PlatformId }) => {
                 file,
                 setResponses,
                 setIsLoading,
-                abortControllerRef,
+                globalAbortControllerRef,
                 startStreaming
               )
             }
@@ -71,7 +68,6 @@ const CreateBox = ({ type }: { type: PlatformId }) => {
         </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 overflow-y-auto p-4 whitespace-pre-wrap leading-relaxed text-black">
         {responseText ? (
           responseText

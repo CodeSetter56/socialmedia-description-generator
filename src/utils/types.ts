@@ -1,5 +1,3 @@
-// File: utils/types.ts
-
 import { Dispatch, SetStateAction } from "react";
 import { IconType } from "react-icons";
 
@@ -60,3 +58,9 @@ type ButtonLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 export type ButtonPropsType = BaseButtonProps &
   (ButtonActionProps | ButtonLinkProps);
+
+
+export interface CreateBoxProps {
+  type: PlatformId;
+  globalAbortControllerRef: React.MutableRefObject<AbortController | null>;
+}

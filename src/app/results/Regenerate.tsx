@@ -1,5 +1,3 @@
-// app/results/Regenerate.ts
-
 import { PlatformId } from "@/utils/types";
 
 export const handleCopy = (
@@ -22,6 +20,7 @@ export const handleRegenerateAll = (
   abortControllerRef: React.MutableRefObject<AbortController | null>,
   startStreaming: any
 ) => {
+
   // Clear responses for selected platforms before regenerating
   setResponses((prev: any) => {
     const reset = { ...prev };
@@ -48,22 +47,24 @@ export const handleRegenerateSingle = (
   file: any,
   setResponses: (r: any) => void,
   setIsLoading: (loading: boolean) => void,
-  abortControllerRef: React.MutableRefObject<AbortController | null>,
+  globalAbortControllerRef: React.MutableRefObject<AbortController | null>,
   startStreaming: any
 ) => {
+  
   // Clear response for this platform before regenerating
   setResponses((prev: any) => ({
     ...prev,
     [platformId]: "",
   }));
 
-  abortControllerRef.current = new AbortController();
+  // Use the global abort controller ref so the stop button can abort individual regenerations
+  globalAbortControllerRef.current = new AbortController();
   startStreaming(
     message,
     [platformId],
     file,
     setResponses,
     setIsLoading,
-    abortControllerRef.current.signal
+    globalAbortControllerRef.current.signal
   );
 };

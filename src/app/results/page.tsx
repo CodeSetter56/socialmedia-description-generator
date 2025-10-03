@@ -22,10 +22,10 @@ export default function ResultsPage() {
     setIsLoading,
   } = useChat();
 
+  // Ref to manage aborting fetch requests
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-
     setIsLoading(true);
 
     abortControllerRef.current = new AbortController();
@@ -36,12 +36,15 @@ export default function ResultsPage() {
       file,
       setResponses,
       setIsLoading,
+      // pass the abort signal to startStreaming
       abortControllerRef.current.signal
     );
 
+    // abort fetch on unmount
     return () => {
       abortControllerRef.current?.abort();
     };
+
   }, [message, file, platforms, setResponses, setIsLoading, router]);
 
   const handleBack = () => {
@@ -88,7 +91,7 @@ export default function ResultsPage() {
               </div>
             </div>
 
-            <div className="flex-1 flex flex-col justify-between min-h-[16rem]">
+            <div className="flex-1 flex flex-col justify-center gap-10 min-h-[16rem]">
               <Button
                 onClick={handleBack}
                 icon={IoMdArrowBack}
@@ -97,37 +100,36 @@ export default function ResultsPage() {
               >
                 Back
               </Button>
-
-              <Button
-                onClick={handleAbort}
-                icon={IoMdClose}
-                iconPosition="left"
-                padding="px-6 py-2.5"
-                color="bg-red-600"
-                className="hover:bg-red-700"
-                ignoreLoading={true}
-              >
-                Stop
-              </Button>
-
-              <Button
-                onClick={() =>
-                  handleRegenerateAll(
-                    message,
-                    platforms,
-                    file,
-                    setResponses,
-                    setIsLoading,
-                    abortControllerRef,
-                    startStreaming
-                  )
-                }
-                icon={IoMdRefresh}
-                iconPosition="left"
-                padding="px-6 py-2.5"
-              >
-                Regenerate All
-              </Button>
+              {isLoading ? (
+                <Button
+                  onClick={handleAbort}
+                  icon={IoMdClose}
+                  iconPosition="left"
+                  padding="px-6 py-2.5"
+                  ignoreLoading={true}
+                >
+                  Stop
+                </Button>
+              ) : (
+                <Button
+                  onClick={() =>
+                    handleRegenerateAll(
+                      message,
+                      platforms,
+                      file,
+                      setResponses,
+                      setIsLoading,
+                      abortControllerRef,
+                      startStreaming
+                    )
+                  }
+                  icon={IoMdRefresh}
+                  iconPosition="left"
+                  padding="px-6 py-2.5"
+                >
+                  Regenerate All
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -143,7 +145,11 @@ export default function ResultsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {platforms.map((platformId: PlatformId) => (
-            <CreateBox key={platformId} type={platformId} />
+            <CreateBox
+              key={platformId}
+              type={platformId}
+              globalAbortControllerRef={abortControllerRef}
+            />
           ))}
         </div>
       </div>

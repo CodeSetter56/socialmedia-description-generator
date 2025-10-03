@@ -1,6 +1,3 @@
-// app/page.tsx
-
-import { IoMdArrowForward } from "react-icons/io";
 import Button from "@/components/Button";
 
 export default function Home() {

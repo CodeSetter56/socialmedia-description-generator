@@ -1,35 +1,29 @@
-// app/results/startStreaming.ts
-
+import { fileToBase64 } from "@/utils/fileToBase64";
 import { ChatContextType, PlatformId, MyFile } from "@/utils/types";
 
-// Helper function to convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      // Remove the data:image/xxx;base64, prefix
-      const base64 = (reader.result as string).split(",")[1];
-      resolve(base64);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
-
 export const startStreaming = async (
-  message: string,
+  message: string | null,
   platforms: PlatformId[],
   file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   signal: AbortSignal
 ) => {
-  if ((!message && !file) || platforms.length === 0) return;
+  if ((!message && !file) || platforms.length === 0) {
+    setIsLoading(false);
+    return;
+  }
 
-  //already set loading true in InputForm
+  // Check if already aborted before starting
+  if (signal.aborted) {
+    setIsLoading(false);
+    return;
+  }
+
+  // Loading state is already set to true before calling this function but just to be safe
   setIsLoading(true);
 
-  // reset only selected platforms to empty strings
+  // reset selected platforms to empty strings
   setResponses((prev) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
@@ -39,7 +33,7 @@ export const startStreaming = async (
   });
 
   try {
-    // Convert image to base64 if exists
+
     let imageBase64 = null;
     let imageType = null;
 
@@ -52,7 +46,7 @@ export const startStreaming = async (
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message,
+        message: message || "",
         platforms,
         image: imageBase64,
         imageType: imageType,
@@ -110,10 +104,10 @@ export const startStreaming = async (
     }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      console.log("Fetch aborted");
+      console.log("Fetch aborted by user");
     } else {
       console.error("Fetch error:", error);
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 };

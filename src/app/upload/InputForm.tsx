@@ -100,7 +100,7 @@ eg: (You uploaded a selfie)
 
         <Button
           onClick={handleSubmit}
-          disabled={!file || platformToggle.length === 0}
+          disabled={(!file && !inputMessage.trim()) || platformToggle.length === 0}
           className="self-center"
         >
           Generate

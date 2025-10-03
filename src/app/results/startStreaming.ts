@@ -17,16 +17,26 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 export const startStreaming = async (
-  message: string,
+  message: string | null,
   platforms: PlatformId[],
   file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   signal: AbortSignal
 ) => {
-  if ((!message && !file) || platforms.length === 0) return;
+  if ((!message && !file) || platforms.length === 0) {
+    setIsLoading(false);
+    return;
+  }
 
-  //already set loading true in InputForm
+  // Check if already aborted before starting
+  if (signal.aborted) {
+    setIsLoading(false);
+    return;
+  }
+
+  // Loading state should already be set to true by the calling function
+  // but ensure it's set in case it wasn't
   setIsLoading(true);
 
   // reset only selected platforms to empty strings
@@ -52,7 +62,7 @@ export const startStreaming = async (
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message,
+        message: message || "",
         platforms,
         image: imageBase64,
         imageType: imageType,
@@ -110,10 +120,12 @@ export const startStreaming = async (
     }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      console.log("Fetch aborted");
+      console.log("Fetch aborted by user");
+      // Don't set loading to false here if it was aborted by user action
+      // The abort handler should manage the loading state
     } else {
       console.error("Fetch error:", error);
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 };

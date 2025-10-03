@@ -25,9 +25,15 @@ export default function ResultsPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    // Only start streaming if we have the required data and aren't already loading
+    if ((!message && !file) || platforms.length === 0) {
+      return;
+    }
 
+    // Ensure loading state is set to true
     setIsLoading(true);
 
+    // Create new abort controller for this streaming session
     abortControllerRef.current = new AbortController();
 
     startStreaming(
@@ -39,10 +45,13 @@ export default function ResultsPage() {
       abortControllerRef.current.signal
     );
 
+    // Cleanup function to abort on component unmount or dependency change
     return () => {
-      abortControllerRef.current?.abort();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [message, file, platforms, setResponses, setIsLoading, router]);
+  }, [message, file, platforms, setResponses, setIsLoading]);
 
   const handleBack = () => {
     setFile(null);
@@ -53,6 +62,8 @@ export default function ResultsPage() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setIsLoading(false);
+      // Clear the reference since this controller is now aborted
+      abortControllerRef.current = null;
     }
   };
 
@@ -105,6 +116,7 @@ export default function ResultsPage() {
                 padding="px-6 py-2.5"
                 color="bg-red-600"
                 className="hover:bg-red-700"
+                disabled={false}
                 ignoreLoading={true}
               >
                 Stop

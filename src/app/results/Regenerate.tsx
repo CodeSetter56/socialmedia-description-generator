@@ -1,6 +1,6 @@
 // app/results/Regenerate.ts
 
-import { PlatformId } from "@/utils/types";
+import { PlatformId, MyFile, ChatContextType } from "@/utils/types";
 
 export const handleCopy = (
   text: string | undefined,
@@ -16,14 +16,26 @@ export const handleCopy = (
 export const handleRegenerateAll = (
   message: string | null,
   platforms: PlatformId[],
-  file: any,
-  setResponses: (r: any) => void,
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   abortControllerRef: React.MutableRefObject<AbortController | null>,
-  startStreaming: any
+  startStreaming: (
+    message: string | null,
+    platforms: PlatformId[],
+    file: MyFile | null,
+    setResponses: ChatContextType["setResponses"],
+    setIsLoading: (loading: boolean) => void,
+    signal: AbortSignal
+  ) => void
 ) => {
+  // Abort any existing request first
+  if (abortControllerRef.current) {
+    abortControllerRef.current.abort();
+  }
+
   // Clear responses for selected platforms before regenerating
-  setResponses((prev: any) => {
+  setResponses((prev) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
       reset[platform] = "";
@@ -31,7 +43,10 @@ export const handleRegenerateAll = (
     return reset;
   });
 
+  // Create new abort controller for this request
   abortControllerRef.current = new AbortController();
+  setIsLoading(true);
+  
   startStreaming(
     message,
     platforms,
@@ -45,19 +60,34 @@ export const handleRegenerateAll = (
 export const handleRegenerateSingle = (
   message: string | null,
   platformId: PlatformId,
-  file: any,
-  setResponses: (r: any) => void,
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
   abortControllerRef: React.MutableRefObject<AbortController | null>,
-  startStreaming: any
+  startStreaming: (
+    message: string | null,
+    platforms: PlatformId[],
+    file: MyFile | null,
+    setResponses: ChatContextType["setResponses"],
+    setIsLoading: (loading: boolean) => void,
+    signal: AbortSignal
+  ) => void
 ) => {
+  // Abort any existing request first
+  if (abortControllerRef.current) {
+    abortControllerRef.current.abort();
+  }
+
   // Clear response for this platform before regenerating
-  setResponses((prev: any) => ({
+  setResponses((prev) => ({
     ...prev,
     [platformId]: "",
   }));
 
+  // Create new abort controller for this request
   abortControllerRef.current = new AbortController();
+  setIsLoading(true);
+  
   startStreaming(
     message,
     [platformId],

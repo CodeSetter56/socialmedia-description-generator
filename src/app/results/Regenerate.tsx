@@ -1,6 +1,15 @@
 // app/results/Regenerate.ts
 
-import { PlatformId } from "@/utils/types";
+import { PlatformId, ChatContextType, MyFile, Responses } from "@/utils/types";
+import type { MutableRefObject } from "react";
+type StartStreamingFn = (
+  message: string,
+  platforms: PlatformId[],
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
+  setIsLoading: (loading: boolean) => void,
+  signal: AbortSignal
+) => Promise<void>;
 
 export const handleCopy = (
   text: string | undefined,
@@ -16,14 +25,14 @@ export const handleCopy = (
 export const handleRegenerateAll = (
   message: string | null,
   platforms: PlatformId[],
-  file: any,
-  setResponses: (r: any) => void,
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
-  abortControllerRef: React.MutableRefObject<AbortController | null>,
-  startStreaming: any
+  abortControllerRef: MutableRefObject<AbortController | null>,
+  startStreaming: StartStreamingFn
 ) => {
   // Clear responses for selected platforms before regenerating
-  setResponses((prev: any) => {
+  setResponses((prev: Responses) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
       reset[platform] = "";
@@ -33,7 +42,7 @@ export const handleRegenerateAll = (
 
   abortControllerRef.current = new AbortController();
   startStreaming(
-    message,
+    message ?? "",
     platforms,
     file,
     setResponses,
@@ -45,21 +54,21 @@ export const handleRegenerateAll = (
 export const handleRegenerateSingle = (
   message: string | null,
   platformId: PlatformId,
-  file: any,
-  setResponses: (r: any) => void,
+  file: MyFile | null,
+  setResponses: ChatContextType["setResponses"],
   setIsLoading: (loading: boolean) => void,
-  abortControllerRef: React.MutableRefObject<AbortController | null>,
-  startStreaming: any
+  abortControllerRef: MutableRefObject<AbortController | null>,
+  startStreaming: StartStreamingFn
 ) => {
   // Clear response for this platform before regenerating
-  setResponses((prev: any) => ({
+  setResponses((prev: Responses) => ({
     ...prev,
     [platformId]: "",
   }));
 
   abortControllerRef.current = new AbortController();
   startStreaming(
-    message,
+    message ?? "",
     [platformId],
     file,
     setResponses,

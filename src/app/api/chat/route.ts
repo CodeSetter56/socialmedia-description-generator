@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
           }
 
           const llmStream = await openrouter.chat.completions.create({
-            model: "x-ai/grok-4-fast:free",
+            model: "deepseek/deepseek-v3.2-exp",
             messages: messages,
             stream: true,
           });

@@ -13,7 +13,7 @@ import { useChat } from "@/context/ChatContext";
 
 export default function InputForm() {
   const router = useRouter();
-  const { file, setMessage, setPlatforms, setIsLoading } = useChat();
+  const { file, setMessage, setPlatforms, setIsLoading, isLoading } = useChat();
   const [inputMessage, setInputMessage] = useState<string>("");
   // array of selected platform ids
   const [platformToggle, setPlatformToggle] = useState<PlatformId[]>([]);
@@ -41,6 +41,7 @@ export default function InputForm() {
     }
 
     setIsLoading(true);
+    
     setMessage(inputMessage); // Can be empty
     setPlatforms(platformToggle);
 
@@ -101,11 +102,11 @@ eg: (You uploaded a selfie)
         <Button
           onClick={handleSubmit}
           disabled={
-            (!file && !inputMessage.trim()) || platformToggle.length === 0
+            (!file && !inputMessage.trim()) || platformToggle.length === 0 
           }
           className="self-center"
         >
-          Generate
+          {isLoading ? "Generating..." : "Generate Posts"}
         </Button>
       </div>
     </div>

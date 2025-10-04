@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
           }
 
           const llmStream = await openrouter.chat.completions.create({
-            model: "x-ai/grok-4-fast:free",
+            model: "mistralai/mistral-small-3.2-24b-instruct:free",
             messages: messages,
             stream: true,
           });
@@ -122,8 +122,7 @@ export async function POST(request: NextRequest) {
       );
 
       // parallel LLM call
-      Promise.allSettled(streamPromises).then((results) => {
-        console.log("all streams completed:", results);
+      Promise.allSettled(streamPromises).then(() => {
 
         // final completion signal to frontend
         safeEnqueue(`data: ${JSON.stringify({ type: "all_done" })}\n\n`);

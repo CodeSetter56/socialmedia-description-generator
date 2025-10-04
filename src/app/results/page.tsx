@@ -3,7 +3,7 @@
 import { IoMdRefresh, IoMdArrowBack, IoMdClose } from "react-icons/io";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image"; 
+import Image from "next/image";
 import { useChat } from "@/context/ChatContext";
 import { PlatformId } from "@/utils/types";
 import { handleRegenerateAll } from "./Regenerate";
@@ -57,29 +57,29 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 bg-white rounded-xl shadow-md p-6">
+        <div className="mb-8 bg-white rounded-xl shadow-md p-4 md:p-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-700 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-700 mb-2">
               Generated Posts for:
             </h1>
           </div>
 
-          <div className="flex items-start justify-between gap-6">
-            {file && (
-              <div className="flex-shrink-0 w-[25%] relative h-64">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4 md:gap-6">
+            {/* Only show preview and user input on md+ screens */}
+            <div className="hidden md:block w-[25%] flex-shrink-0 relative h-64">
+              {file && (
                 <Image
                   src={file.preview}
                   alt="Uploaded content"
                   fill
                   className="rounded-lg shadow-sm object-cover"
-                  unoptimized 
+                  unoptimized
                 />
-              </div>
-            )}
-
-            <div className="w-[55%] flex-shrink-0">
+              )}
+            </div>
+            <div className="hidden md:block w-[55%] flex-shrink-0">
               <div className="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto border border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-700 mb-2">
                   User Input:
@@ -89,8 +89,8 @@ export default function ResultsPage() {
                 </p>
               </div>
             </div>
-
-            <div className="flex-1 flex flex-col justify-center gap-10 min-h-[16rem]">
+            {/* Buttons always visible */}
+            <div className="w-full md:flex-1 flex flex-col justify-center gap-6 md:gap-10 min-h-[8rem] md:min-h-[16rem]">
               <Button
                 onClick={handleBack}
                 icon={IoMdArrowBack}

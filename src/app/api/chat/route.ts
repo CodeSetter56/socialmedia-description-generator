@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
           }
 
           const llmStream = await openrouter.chat.completions.create({
-            model: "x-ai/grok-4-fast:free",
+            model: "gryphe/mythomax-l2-13b",
             messages: messages,
             stream: true,
           });

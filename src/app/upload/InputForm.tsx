@@ -1,5 +1,3 @@
-// app/upload/InputForm.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -13,23 +11,25 @@ import { useChat } from "@/context/ChatContext";
 
 export default function InputForm() {
   const router = useRouter();
-  const { file, setMessage, setPlatforms, setIsLoading, isLoading } = useChat();
+  const {
+    file,
+    setMessage,
+    setPlatforms,
+    setLoadingForPlatforms,
+    isAnyLoading,
+  } = useChat(); 
   const [inputMessage, setInputMessage] = useState<string>("");
-  // array of selected platform ids
   const [platformToggle, setPlatformToggle] = useState<PlatformId[]>([]);
 
   const handlePlatformSelect = (isActive: boolean, id: PlatformId) => {
     if (isActive) {
-      // remove from array
       setPlatformToggle(platformToggle.filter((pId) => pId !== id));
     } else {
-      // add to array
       setPlatformToggle([...platformToggle, id]);
     }
   };
 
   const handleSubmit = () => {
-    // Check if we have either an image OR text
     if (!file && !inputMessage.trim()) {
       alert("Please upload an image or provide a description");
       return;
@@ -40,9 +40,9 @@ export default function InputForm() {
       return;
     }
 
-    setIsLoading(true);
-    
-    setMessage(inputMessage); // Can be empty
+    setLoadingForPlatforms(platformToggle, true); 
+
+    setMessage(inputMessage);
     setPlatforms(platformToggle);
 
     router.push("/results");
@@ -102,11 +102,11 @@ eg: (You uploaded a selfie)
         <Button
           onClick={handleSubmit}
           disabled={
-            (!file && !inputMessage.trim()) || platformToggle.length === 0 
+            (!file && !inputMessage.trim()) || platformToggle.length === 0
           }
           className="self-center"
         >
-          {isLoading ? "Generating..." : "Generate Posts"}
+          {isAnyLoading ? "Generating..." : "Generate Posts"}
         </Button>
       </div>
     </div>

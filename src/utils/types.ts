@@ -31,10 +31,22 @@ export type ChatContextType = {
   platforms: PlatformId[];
   setPlatforms: (platforms: PlatformId[]) => void;
   responses: Responses;
+  // setresponses using dispatch function to update specific platform response and setstateaction for resetting all responses
   setResponses: Dispatch<SetStateAction<Responses>>;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
+  
+  // for handling loading states per platform
+  loadingPlatforms: Set<PlatformId>;
+  addLoadingPlatform: (platformId: PlatformId) => void;
+  removeLoadingPlatform: (platformId: PlatformId) => void;
+  setLoadingForPlatforms: (platformIds: PlatformId[], loading: boolean) => void;
+  clearAllLoading: () => void;
+  isPlatformLoading: (platformId: PlatformId) => boolean;
+  isAnyLoading: boolean;
 };
+
+export interface CreateBoxProps {
+  type: PlatformId;
+}
 
 type BaseButtonProps = {
   children: React.ReactNode;
@@ -43,24 +55,18 @@ type BaseButtonProps = {
   icon?: IconType;
   iconPosition?: "left" | "right";
   className?: string;
-  ignoreLoading?: boolean; // flag to ignore global loading
-  disabled?: boolean; // explicit disabled prop
+  ignoreLoading?: boolean;
+  disabled?: boolean;
 };
 
 type ButtonActionProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  // doesnot have link
   href?: never;
 };
+
 type ButtonLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-  // has link
   href: string;
 };
 
 export type ButtonPropsType = BaseButtonProps &
   (ButtonActionProps | ButtonLinkProps);
 
-
-export interface CreateBoxProps {
-  type: PlatformId;
-  globalAbortControllerRef: React.MutableRefObject<AbortController | null>;
-}

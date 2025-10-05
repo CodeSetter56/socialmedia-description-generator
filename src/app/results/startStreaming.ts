@@ -6,24 +6,21 @@ export const startStreaming = async (
   platforms: PlatformId[],
   file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
-  setIsLoading: (loading: boolean) => void,
+  setLoadingForPlatforms: ChatContextType["setLoadingForPlatforms"],
   signal: AbortSignal
 ) => {
   if ((!message && !file) || platforms.length === 0) {
-    setIsLoading(false);
+    setLoadingForPlatforms(platforms, false);
     return;
   }
 
-  // Check if already aborted before starting
   if (signal.aborted) {
-    setIsLoading(false);
+    setLoadingForPlatforms(platforms, false);
     return;
   }
 
-  // Loading state is already set to true before calling this function but just to be safe
-  setIsLoading(true);
+  setLoadingForPlatforms(platforms, true);
 
-  // reset selected platforms to empty strings
   setResponses((prev) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
@@ -50,41 +47,43 @@ export const startStreaming = async (
         image: imageBase64,
         imageType: imageType,
       }),
-      signal, // attach the AbortSignal to the fetch request
+      signal,
     });
 
     if (!response.body) {
       throw new Error("Response body is empty.");
     }
 
-    // ReadableStreamDefaultReader - allows reading data chunks from a stream one by one
+    // Read the streaming response 
     const reader = response.body.getReader();
-    // TextDecoder - converts raw bytes into readable text strings
+    // decider to convert response to string
     const decoder = new TextDecoder();
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        setIsLoading(false);
+        setLoadingForPlatforms(platforms, false);
         break;
       }
 
-      // convert byte array chunk into a readable string
+      // decode the received chunk and process it
       const chunk = decoder.decode(value);
       const lines = chunk.split("\n");
 
       for (const line of lines) {
-        // server sent response starts with "data: "
+        // Each line in the stream is prefixed with "data: "
         if (line.startsWith("data: ")) {
           try {
             const data = JSON.parse(line.slice(6));
             const { type, content, error } = data;
-            // server sent signal that all responses are done
+
+            // server sent signal that all platforms are done
             if (type === "all_done") {
-              setIsLoading(false); // mark as done here
+              setLoadingForPlatforms(platforms, false);
               return;
             }
 
+            // append content to the respective platform response
             if (content && type) {
               setResponses((prev) => ({
                 ...prev,
@@ -94,6 +93,16 @@ export const startStreaming = async (
 
             if (error) {
               console.error(`Error in stream for type ${type}:`, error);
+
+              if (
+                error.includes("429") ||
+                error.includes("Rate limit exceeded") ||
+                error.includes("quota")
+              ) {
+                alert(
+                  "⚠️ Model quota exhausted or daily free limit reached.\nPlease wait or upgrade your API plan."
+                );
+              }
             }
           } catch (e) {
             console.error("Failed to parse stream data:", e);
@@ -106,7 +115,21 @@ export const startStreaming = async (
       console.log("Fetch aborted by user");
     } else {
       console.error("Fetch error:", error);
-      setIsLoading(false);
+
+      if (
+        error instanceof Error &&
+        (error.message.includes("429") ||
+          error.message.includes("Rate limit exceeded") ||
+          error.message.includes("quota"))
+      ) {
+        alert(
+          "⚠️ Model quota exhausted or daily free limit reached.\nPlease wait or upgrade your API plan."
+        );
+      } else {
+        alert("❌ Unable to connect to the server. Please try again later.");
+      }
     }
+
+    setLoadingForPlatforms(platforms, false);
   }
 };

@@ -1,29 +1,37 @@
 "use client";
 
 import { IoMdRefresh, IoMdClipboard, IoMdCheckmark } from "react-icons/io";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useChat } from "@/context/ChatContext";
 import { platformConfig } from "@/utils/config";
 import { CreateBoxProps, PlatformId } from "@/utils/types";
 import { handleCopy, handleRegenerateSingle } from "./Regenerate";
 import { startStreaming } from "@/app/results/startStreaming";
 
-// globalAbortControllerRef for aborting individual regenerations
-const CreateBox = ({ type, globalAbortControllerRef }: CreateBoxProps) => {
-  const { responses, isLoading, message, file, setResponses, setIsLoading } =
-    useChat();
+const CreateBox = ({ type }: CreateBoxProps) => {
+  const {
+    responses,
+    isPlatformLoading, 
+    message,
+    file,
+    setResponses,
+    setLoadingForPlatforms, 
+  } = useChat();
 
   const [copiedPlatform, setCopiedPlatform] = useState<PlatformId | null>(null);
+
+  // each box has its own abort controller for single regeneration
+  const singleAbortControllerRef = useRef<AbortController | null>(null);
 
   const config = platformConfig.find((p) => p.id === type);
   if (!config) return null;
 
   const responseText = responses[type];
   const isCopied = copiedPlatform === type;
+  const isThisPlatformLoading = isPlatformLoading(type); 
 
   return (
-
-<div className="flex flex-col border-2 rounded-lg bg-white border-gray-200 shadow-sm h-[400px]">
+    <div className="flex flex-col border-2 rounded-lg bg-white border-gray-200 shadow-sm h-[400px]">
       <div className="flex justify-between items-center gap-2 p-3 border-b">
         <div className="flex gap-2">
           <config.icon className={`h-6 w-6 ${config.color}`} />
@@ -31,10 +39,9 @@ const CreateBox = ({ type, globalAbortControllerRef }: CreateBoxProps) => {
         </div>
 
         <div className="flex gap-2">
-
           <button
             onClick={() => handleCopy(responseText, type, setCopiedPlatform)}
-            disabled={!responseText || isLoading}
+            disabled={!responseText || isThisPlatformLoading} 
             className={`w-10 h-10 flex items-center justify-center rounded-lg transition-all ${
               isCopied
                 ? "bg-gray-300 text-white"
@@ -55,12 +62,12 @@ const CreateBox = ({ type, globalAbortControllerRef }: CreateBoxProps) => {
                 type,
                 file,
                 setResponses,
-                setIsLoading,
-                globalAbortControllerRef,
+                setLoadingForPlatforms, 
+                singleAbortControllerRef, 
                 startStreaming
               )
             }
-            disabled={isLoading}
+            disabled={isThisPlatformLoading} // only disabled if this platform is loading
             className="w-10 h-10 flex items-center justify-center bg-amber-900 text-white rounded-lg hover:bg-amber-950 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
             <IoMdRefresh size={20} />
@@ -72,7 +79,9 @@ const CreateBox = ({ type, globalAbortControllerRef }: CreateBoxProps) => {
         {responseText ? (
           responseText
         ) : (
-          <span className="text-gray-500 italic">Typing...</span>
+          <span className="text-gray-500 italic">
+            {isThisPlatformLoading ? "Typing..." : "Waiting..."}
+          </span>
         )}
       </div>
     </div>

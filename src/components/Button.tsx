@@ -17,14 +17,14 @@ export default function Button(props: ButtonPropsType) {
     ...rest
   } = props;
 
-  const { isLoading } = useChat();
+  const { isAnyLoading } = useChat(); // Changed from isLoading
 
   //  if button should be disabled
   // check if disabled is true OR if loading should disable it
   const shouldDisable =
-    disabled === false ? false : disabled || (!ignoreLoading && isLoading);
+    disabled === false ? false : disabled || (!ignoreLoading && isAnyLoading);
 
-  // central styles 
+  // central styles
   const baseStyles = `font-semibold text-white rounded-lg hover:bg-amber-950 transition-all inline-flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed`;
 
   // icon orientation and content

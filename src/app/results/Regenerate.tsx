@@ -1,6 +1,4 @@
 import { ChatContextType, PlatformId, MyFile } from "@/utils/types";
-
-// Import the actual startStreaming function
 import { startStreaming } from "./startStreaming";
 
 export const handleCopy = (
@@ -19,11 +17,10 @@ export const handleRegenerateAll = (
   platforms: PlatformId[],
   file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
-  setIsLoading: (loading: boolean) => void,
+  setLoadingForPlatforms: ChatContextType["setLoadingForPlatforms"], // Updated
   abortControllerRef: React.MutableRefObject<AbortController | null>,
   startStreamingFn: typeof startStreaming
 ) => {
-
   setResponses((prev) => {
     const reset = { ...prev };
     platforms.forEach((platform) => {
@@ -38,7 +35,7 @@ export const handleRegenerateAll = (
     platforms,
     file,
     setResponses,
-    setIsLoading,
+    setLoadingForPlatforms, // Updated
     abortControllerRef.current.signal
   );
 };
@@ -48,23 +45,22 @@ export const handleRegenerateSingle = (
   platformId: PlatformId,
   file: MyFile | null,
   setResponses: ChatContextType["setResponses"],
-  setIsLoading: (loading: boolean) => void,
-  globalAbortControllerRef: React.MutableRefObject<AbortController | null>,
+  setLoadingForPlatforms: ChatContextType["setLoadingForPlatforms"], // Updated
+  singleAbortControllerRef: React.MutableRefObject<AbortController | null>, // Renamed for clarity
   startStreamingFn: typeof startStreaming
 ) => {
-  
   setResponses((prev) => ({
     ...prev,
     [platformId]: "",
   }));
 
-  globalAbortControllerRef.current = new AbortController();
+  singleAbortControllerRef.current = new AbortController();
   startStreamingFn(
     message,
     [platformId],
     file,
     setResponses,
-    setIsLoading,
-    globalAbortControllerRef.current.signal
+    setLoadingForPlatforms, // Updated
+    singleAbortControllerRef.current.signal
   );
 };

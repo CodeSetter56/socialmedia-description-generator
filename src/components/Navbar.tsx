@@ -7,17 +7,18 @@ import Link from "next/link";
 import { useState } from "react";
 
 function Navbar() {
-  const { setFile, setIsLoading } = useChat();
+  const { setFile, clearAllLoading } = useChat(); // Updated
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogoClick = () => {
     setFile(null);
-    setIsLoading(false);
+    clearAllLoading(); // Updated
     setMenuOpen(false);
   };
 
   return (
     <nav className="flex bg-amber-900 justify-between items-center px-6 md:px-12 py-4 relative">
+
       <Link
         className="text-lg font-medium cursor-pointer text-white"
         href={"/"}
@@ -25,11 +26,11 @@ function Navbar() {
       >
         PostGen
       </Link>
-      {/* Desktop links */}
+
       <div className="gap-6 text-sm font-medium cursor-pointer text-white hidden md:flex">
         <div className="hover:underline ">future scope</div>
       </div>
-      {/* Hamburger for small screens */}
+
       <div className="md:hidden">
         <button
           className="text-white focus:outline-none"
@@ -50,6 +51,7 @@ function Navbar() {
           </div>
         )}
       </div>
+      
     </nav>
   );
 }

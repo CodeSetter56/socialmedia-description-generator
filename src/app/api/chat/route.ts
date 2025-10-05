@@ -8,6 +8,8 @@ const openrouter = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
+const Model = "qwen/qwen2.5-vl-32b-instruct:free";
+
 export async function POST(request: NextRequest) {
   // from startStreaming
   const { message, platforms, image, imageType } = await request.json();
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
           }
 
           const llmStream = await openrouter.chat.completions.create({
-            model: "mistralai/mistral-small-3.2-24b-instruct:free",
+            model: Model,
             messages: messages,
             stream: true,
           });

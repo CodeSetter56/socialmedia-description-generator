@@ -19,30 +19,32 @@ export default function ResultsPage() {
     setFile,
     platforms,
     setResponses,
-    isLoading,
-    setIsLoading,
+    isAnyLoading, 
+    setLoadingForPlatforms, 
+    clearAllLoading, 
   } = useChat();
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // Global abort controller for "Regenerate All" and initial generation
+  const globalAbortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    setIsLoading(true);
+    setLoadingForPlatforms(platforms, true);
 
-    abortControllerRef.current = new AbortController();
+    globalAbortControllerRef.current = new AbortController();
 
     startStreaming(
       message,
       platforms,
       file,
       setResponses,
-      setIsLoading,
-      abortControllerRef.current.signal
+      setLoadingForPlatforms, 
+      globalAbortControllerRef.current.signal
     );
 
     return () => {
-      abortControllerRef.current?.abort();
+      globalAbortControllerRef.current?.abort();
     };
-  }, [message, file, platforms, setResponses, setIsLoading, router]);
+  }, [message, file, platforms, setResponses, setLoadingForPlatforms, router]);
 
   const handleBack = () => {
     setFile(null);
@@ -50,9 +52,9 @@ export default function ResultsPage() {
   };
 
   const handleAbort = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      setIsLoading(false);
+    if (globalAbortControllerRef.current) {
+      globalAbortControllerRef.current.abort();
+      clearAllLoading(); 
     }
   };
 
@@ -67,7 +69,6 @@ export default function ResultsPage() {
           </div>
 
           <div className="flex flex-col md:flex-row items-start justify-between gap-4 md:gap-6">
-            {/* Only show preview and user input on md+ screens */}
             <div className="hidden md:block w-[25%] flex-shrink-0 relative h-64">
               {file && (
                 <Image
@@ -89,7 +90,6 @@ export default function ResultsPage() {
                 </p>
               </div>
             </div>
-            {/* Buttons always visible */}
             <div className="w-full md:flex-1 flex flex-col justify-center gap-6 md:gap-10 min-h-[8rem] md:min-h-[16rem]">
               <Button
                 onClick={handleBack}
@@ -99,7 +99,7 @@ export default function ResultsPage() {
               >
                 Back
               </Button>
-              {isLoading ? (
+              {isAnyLoading ? ( 
                 <Button
                   onClick={handleAbort}
                   icon={IoMdClose}
@@ -117,8 +117,8 @@ export default function ResultsPage() {
                       platforms,
                       file,
                       setResponses,
-                      setIsLoading,
-                      abortControllerRef,
+                      setLoadingForPlatforms, 
+                      globalAbortControllerRef,
                       startStreaming
                     )
                   }
@@ -133,7 +133,7 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {isLoading && (
+        {isAnyLoading && ( 
           <div className="mb-6 text-center">
             <p className="text-gray-600 animate-pulse">
               Generating content for {platforms.length} platform
@@ -144,11 +144,7 @@ export default function ResultsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {platforms.map((platformId: PlatformId) => (
-            <CreateBox
-              key={platformId}
-              type={platformId}
-              globalAbortControllerRef={abortControllerRef}
-            />
+            <CreateBox key={platformId} type={platformId} />
           ))}
         </div>
       </div>

@@ -8,7 +8,7 @@ const openrouter = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-const Model = "qwen/qwen2.5-vl-32b-instruct:free";
+const Model = "nvidia/nemotron-nano-12b-v2-vl:free";
 
 export async function POST(request: NextRequest) {
   // from startStreaming
